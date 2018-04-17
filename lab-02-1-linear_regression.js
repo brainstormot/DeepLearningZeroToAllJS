@@ -74,42 +74,90 @@ for (let i = 0; i < 2000; i++) {
         
         let newDiv = document.createElement('div')
         newDiv.setAttribute("id", `iter${i+1}`)
-        newDiv.setAttribute("width", `250px`)
-        newDiv.setAttribute("height", `250px`)
-        newDiv.setAttribute("display", `inline`)
+        // newDiv.setAttribute("width", `400px`)
+        // newDiv.setAttribute("height", `400px`)
+        // newDiv.setAttribute("display", `inline-block`)
+        // newDiv.setAttribute("position", `relative`)
         canvas.appendChild(newDiv)
         
         // const maxAbsYRange = Math.ceil(_.max(y_preds.map(value=>Math.abs(value))))
-        let chart = bb.generate({
+        var chart = bb.generate({
             "data": {
                 x:"x"
                 ,"columns": [
                     ["x",...x_ranges]
-                    ,[`y_preds iter ${i+1}`,...y_preds]
+                    ,[`[iter ${i+1}] y = ${W_pred.toFixed(3)}*x + (${b_pred.toFixed(3)})`,...y_preds]
+                    ,["[true] y = x", ...x_ranges]
                  ]
             }
             ,size: {
-                "height": 200,
-                "width": 200,
+                "height": 300,
+                "width": 320,
             },
             axis: {
                 x: {
                     tick: {
-                        count: 5
+                        count: 11
+                        ,culling: false
+                        ,outer: false
+                        ,format: function(x) {
+                            return x.toFixed(1);
+                        }
                       }                  
                     ,min: maxAbsXRange*-1
                     ,max: maxAbsXRange
+                    ,padding: {
+                        right: 0,
+                        left: 0
+                    }
                 },
                 y:{
                     tick: {
-                        count: 5
+                        count: 11
+                        ,format: function(x) {
+                            return x.toFixed(1);
+                        }
                       }                  
                     ,min: maxAbsXRange*-1
                     ,max: maxAbsXRange
+                    ,padding: {
+                        top: 0,
+                        bottom: 0
+                    }
                 }
             },
-            bindto: `#iter${i+1}`
+            point: {
+                show: false
+            },
+            legend: {
+                position: "inset"
+            }
+            ,grid: {
+                x: {
+                  show: true,
+                  lines: [
+                    {value: 0, text: ""},
+                  ]
+                },
+                y: {
+                  show: true,
+                  lines: [
+                    {value: 0, text: ""}
+                  ]
+                },
+                focus: {
+                   show: false
+                },
+                lines: {
+                   front: false
+                }
+              }
+            ,bindto: `#iter${i+1}`
         });
+        chart.xgrids({value: 0, text: ""});
+        chart.ygrids({value: 0, text: ""});
+
+
     }
 }
 
