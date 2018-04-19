@@ -1,13 +1,22 @@
 // var seed = 777
 
-var x_train = [1, 2, 3]
-var y_train = [1, 2, 3]
+const trueFunction = function(x){
+    return 2*x+1
+}
+const trueFunctionName = "y = 2*x+1"
+
+const x_train = [1, 2, 3]
+const y_train = _.chain(x_train).map(trueFunction).value()
+
+const maxEpoch = 2000
+const printInterval = 100
 
 // using d3 and underscore for generating x_ranges, but i believe there should be a better way.
 // x range : [-max(x_train),max(x_train)]
 var x_ranges = _.range(101).map(
     x=>d3.scaleLinear().domain([0,100]).range([_.max(x_train)*-1,_.max(x_train)])(x)
 )
+var y_true = _.chain(x_ranges).map(trueFunction).value()
 // for rendering chart.
 const maxAbsXRange = Math.ceil(_.max(x_ranges.map(value=>Math.abs(value)))) 
 
@@ -50,9 +59,20 @@ function main(){
     const learning_rate=0.01
     optimizer = tf.train.sgd(learning_rate)
 
-    for (let i = 0; i < 2000; i++) {
+    // before training
+    renderChart(
+        x_ranges // x domain range
+        ,-1 // iteration - 1
+        ,x_ranges.map(function(x){ // y_pred
+            return Number(W.dataSync()[0]*x+b.dataSync()[0]).toFixed(4)
+        }) 
+        ,W.dataSync()[0] // W_pred
+        ,b.dataSync()[0] // b_pred
+    )
+
+    for (let i = 0; i < maxEpoch; i++) {
         optimizer.minimize(()=>loss(predict(tensor_x_train),tensor_y_train));
-        if(i%100==0){
+        if(i%printInterval==0){
             log(`[iter ${i+1}] loss : ${loss(predict(tensor_x_train),tensor_y_train).dataSync()}`)
             let W_pred = W.dataSync()[0];
             // console.log(W_pred)
@@ -66,7 +86,18 @@ function main(){
 
         }
     }
+
+    // after training
     log(`W: ${W.dataSync()}, b: ${b.dataSync()}`)
+    renderChart(
+        x_ranges
+        ,maxEpoch
+        ,x_ranges.map(function(x){
+            return Number(W.dataSync()[0]*x+b.dataSync()[0]).toFixed(4)
+        })
+        ,W.dataSync()[0]
+        ,b.dataSync()[0]
+    )
 }
 
 
@@ -83,7 +114,7 @@ function renderChart(x_ranges,i,y_preds,W_pred,b_pred){
             ,"columns": [
                 ["x",...x_ranges]
                 ,[`[iter ${i+1}] y = ${W_pred.toFixed(3)}*x + (${b_pred.toFixed(3)})`,...y_preds]
-                ,["[true] y = x", ...x_ranges]
+                ,[`[true] ${trueFunctionName}`, ...y_true]
              ]
         }
         ,size: {
