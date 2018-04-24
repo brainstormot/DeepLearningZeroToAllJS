@@ -18,9 +18,9 @@ const y_data = [[0, 0, 1],
 
 const nb_classes = 3
 
-const maxEpoch = 10001
+const maxEpoch = 2001
 const printInterval = 200
-
+const learning_rate=0.1
 
 // main function
 function main(){
@@ -43,7 +43,12 @@ function main(){
         )
 
     log(`init W : ${W.dataSync()}`)
+    console.log(typeof W)
+    console.log(ToStackedArray(W))
+    console.log(W)
+    return;
     log(`init b : ${b.dataSync()}`)
+    log(`learning_rate : ${learning_rate}`) 
 
     function predict(x){
         return tf.tidy(() => {
@@ -61,8 +66,6 @@ function main(){
         });
     }
 
-    const learning_rate=0.01
-    log(`learning_rate : ${learning_rate}`) 
        
     optimizer = tf.train.sgd(learning_rate)
 
@@ -72,16 +75,21 @@ function main(){
      */
     function predicted(predict_Tensor){
         let predict  = _.chunk(predict_Tensor.dataSync(),nb_classes) // dataSync() and data() returns flatten data.
-        // console.log(predict)
-        // let max = _.max(predict)
-        return _.chain(predict).reduce(function(prev,current,index){
-            // console.log("index",index)
-            if(prev.value < current){
-                prev.value = current;
-                prev.index = index;
+        let oneHotVectors = _.chain(predict).map(
+            function(row){
+                let oneHotVector = Array.apply(null, Array(nb_classes)).map(Number.prototype.valueOf,0)
+                let index = _.chain(row).reduce(function(prev,current,index){
+                    if(prev.value < current){
+                        prev.value = current;
+                        prev.index = index;
+                    }
+                    return prev
+                    },{index:-1,value:-1}).value().index
+                oneHotVector[index] = 1;
+                return oneHotVector
             }
-            return prev
-        },{index:-1,value:-1}).value().index
+        ).value()
+        return oneHotVectors;
     }
     /**
      * @param { number[x_data.legnth ,1] } predicted_labels
@@ -90,7 +98,7 @@ function main(){
      */
     function accuracy(predicted_labels,true_labels){
         let matchCount= _.chain(_.zip(predicted_labels,true_labels)).reduce(function(sum,pair){
-            if(pair[0]===pair[1]){
+            if(_.isEqual(pair[0],pair[1])){
                 return sum+1;
             }else{
                 return sum;
@@ -103,13 +111,13 @@ function main(){
         optimizer.minimize(()=>loss(predict(x_train),y_train));
         if(i%printInterval==0){
             log(`[iter ${i+1}] loss : ${loss(predict(x_train),y_train)}`)
-            log(`[iter ${i+1}] Prediction : ${predicted(predict(x_train))}`)
-            log(`[iter ${i+1}] Accuracy : ${accuracy(predicted(predict(x_train)),_.flatten(y_data))}`)
+            log(`[iter ${i+1}] Prediction : [${predicted(predict(x_train)).map(row=>`[${row.toString()}]`)}]`)
+            log(`[iter ${i+1}] Accuracy : ${accuracy(predicted(predict(x_train)),y_data)}`)
         }
     }
 
     // after training
     log(`[final result] loss : ${loss(predict(x_train),y_train)}`)
-    log(`[final result] Prediction : ${predicted(predict(x_train))}`)
-    log(`[final result] Accuracy : ${accuracy(predicted(predict(x_train)),_.flatten(y_data))}`)
+    log(`[final result] Prediction : [${predicted(predict(x_train)).map(row=>`[${row.toString()}]`)}]`)
+    log(`[final result] Accuracy : ${accuracy(predicted(predict(x_train)),y_data)}`)
 }
