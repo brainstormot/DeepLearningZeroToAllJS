@@ -30,7 +30,7 @@ function main(){
     log(`y_train : ${y_train}`)
 
     var W = tf.variable(
-            tf.randomNormal([4,nb_classes,5],0,1,'float32') 
+            tf.randomNormal([4,nb_classes],0,1,'float32') 
             , true 
             , 'weight' 
             , 'float32' 
@@ -42,13 +42,8 @@ function main(){
         , 'float32'
         )
 
-    log(`init W : ${W.dataSync()}`)
-    console.log(typeof W)
-    console.log(ToStackedArray(W))
-    console.log(W)
-    console.log(W.hello())
-    return;
-    log(`init b : ${b.dataSync()}`)
+    log(`init W : ${ToStackedArray(W)}`)
+    log(`init b : ${ToStackedArray(b)}`)
     log(`learning_rate : ${learning_rate}`) 
 
     function predict(x){
