@@ -61,8 +61,8 @@ function main(){
             , 'float32'
             )
 
-        log(`init W : ${ToStackedArray(W)}`)
-        log(`init b : ${ToStackedArray(b)}`)
+        log(`init W : ${ToStackedArray(W,3)}`)
+        log(`init b : ${ToStackedArray(b,3)}`)
         log(`learning_rate : ${learning_rate}`) 
 
         function predict(x){
@@ -99,8 +99,8 @@ function main(){
          * @return { number } accuracy 
          */
         function accuracy(predicted_labels,true_labels){
-            console.log(predicted_labels)
-            console.log(true_labels)
+            // console.log(predicted_labels)
+            // console.log(true_labels)
             let matchCount= _.chain(_.zip(predicted_labels,true_labels)).reduce(function(sum,pair){
                 if(_.isEqual(pair[0],pair[1])){
                     return sum+1;
@@ -111,16 +111,12 @@ function main(){
             return matchCount / predicted_labels.length
         }
 
-        for (let i = 0; i <= maxEpoch; i++) {
+        var i=0;
+        for (; i <= maxEpoch; i++) {
             optimizer.minimize(()=>loss(predict(x_train),y_train));
-            if(i%printInterval==0){
-                log(`[iter ${i+1}] loss : ${loss(predict(x_train),y_train)}`)
-                log(`[iter ${i+1}] Accuracy : ${accuracy(predicted(predict(x_train)),_.flatten(y_data))}`)
+            if(i%printInterval==0 || i==maxEpoch){
+                log(`[iter ${String(i+1).padStart(4,0)}] loss : ${Number(loss(predict(x_train),y_train).dataSync()).toFixed(3)}  Accuracy : ${accuracy(predicted(predict(x_train)),_.flatten(y_data)).toFixed(3)}`)
             }
         }
-
-        // after training
-        log(`[final result] loss : ${loss(predict(x_train),y_train)}`)
-        log(`[final result] Accuracy : ${accuracy(predicted(predict(x_train)),_.flatten(y_data))}`)
     })
 }
