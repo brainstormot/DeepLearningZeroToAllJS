@@ -1,26 +1,8 @@
-const x_data = [[1, 2, 1, 1],
-                [2, 1, 3, 2],
-                [3, 1, 3, 4],
-                [4, 1, 5, 5],
-                [1, 7, 5, 5],
-                [1, 2, 5, 6],
-                [1, 6, 6, 6],
-                [1, 7, 7, 7]]
-
-const y_data = [[0, 0, 1],
-                [0, 0, 1],
-                [0, 0, 1],
-                [0, 1, 0],
-                [0, 1, 0],
-                [0, 1, 0],
-                [1, 0, 0],
-                [1, 0, 0]]
-
 const nb_classes = 7 // 0 ~ 6
 const num_w = 16
 
 const maxEpoch = 2001
-const printInterval = 400
+const printInterval = 100
 const learning_rate=0.1
 
 
@@ -42,11 +24,12 @@ function main(){
         }).value()
         console.log(x_data)
         console.log(y_data)
-
         var x_train = tf.tensor2d(x_data)
         var y_train = tf.tensor2d(y_data)
+        var y_one_hot = toOneHot(y_train,nb_classes)
         log(`x_train : ${x_train}`)
-        log(`y_train : ${y_train}`)
+        log(`x_train : ${x_train}`)
+        log(`y_one_hot : ${y_one_hot}`)
 
         var W = tf.variable(
                 tf.randomNormal([num_w,nb_classes],0,1,'float32') 
@@ -72,11 +55,13 @@ function main(){
         }
 
         function loss(pred, label){
+            console.log(pred.shape)
+            console.log(label.shape)
             return tf.tidy(() => {
                 // cross entropy
                 return tf.add(
                     label.mul(pred.log())
-                    , tf.mul(tf.ones([1]).sub(label), tf.ones([1]).sub(pred).log())
+                    , tf.mul(tf.onesLike(label).sub(label), tf.onesLike(pred).sub(pred).log())
                 ).mean().mul(tf.tensor1d([-1])).squeeze()
             });
         }
@@ -113,10 +98,14 @@ function main(){
 
         var i=0;
         for (; i <= maxEpoch; i++) {
-            optimizer.minimize(()=>loss(predict(x_train),y_train));
+            optimizer.minimize(()=>loss(predict(x_train),y_one_hot));
             if(i%printInterval==0 || i==maxEpoch){
-                log(`[iter ${String(i+1).padStart(4,0)}] loss : ${Number(loss(predict(x_train),y_train).dataSync()).toFixed(3)}  Accuracy : ${accuracy(predicted(predict(x_train)),_.flatten(y_data)).toFixed(3)}`)
+                log(`[iter ${String(i+1).padStart(4,0)}] loss : ${Number(loss(predict(x_train),y_one_hot).dataSync()).toFixed(3)}  Accuracy : ${accuracy(predicted(predict(x_train)),_.flatten(y_data)).toFixed(3)}`)
             }
         }
+
+        _.zip(predicted(predict(x_train)),_.flatten(y_data)).forEach((zipped)=>{
+            log(`[${zipped[0]===zipped[1]}] Prediction: ${zipped[0]} True Y: ${zipped[1]}`)
+        })
     })
 }
