@@ -1,11 +1,11 @@
-const x_data = [[1, 2, 1, 1],
-                [2, 1, 3, 2],
-                [3, 1, 3, 4],
-                [4, 1, 5, 5],
-                [1, 7, 5, 5],
-                [1, 2, 5, 6],
-                [1, 6, 6, 6],
-                [1, 7, 7, 7]]
+const x_data = [[1, 2, 1],
+                [1, 3, 2],
+                [1, 3, 4],
+                [1, 5, 5],
+                [1, 7, 5],
+                [1, 2, 5],
+                [1, 6, 6],
+                [1, 7, 7]]
 
 const y_data = [[0, 0, 1],
                 [0, 0, 1],
@@ -16,21 +16,31 @@ const y_data = [[0, 0, 1],
                 [1, 0, 0],
                 [1, 0, 0]]
 
+const x_test = [[2, 1, 1],
+                [3, 1, 2],
+                [3, 3, 4]]
+
+const y_test = [[0, 0, 1],
+                [0, 0, 1],
+                [0, 0, 1]]
+
 const nb_classes = 3
 
-const maxEpoch = 2001
-const printInterval = 200
-const learning_rate=0.1
+const maxEpoch = 501
+const printInterval = 20
+const learning_rate=1e-4
 
 // main function
 function main(){
-    var x_train = tf.tensor2d(x_data)
-    var y_train = tf.tensor2d(y_data)
-    log(`x_train : ${x_train}`)
-    log(`y_train : ${y_train}`)
+    var x_train_tensor = tf.tensor2d(x_data)
+    var y_train_tensor = tf.tensor2d(y_data)
+    log(`x_train_tensor : ${x_train_tensor}`)
+    log(`y_train_tensor : ${y_train_tensor}`)
+
+    var x_test_tensor = tf.tensor2d(x_test)
 
     var W = tf.variable(
-            tf.randomNormal([4,nb_classes],0,1,'float32') 
+            tf.randomNormal([3,nb_classes],0,1,'float32') 
             , true 
             , 'weight' 
             , 'float32' 
@@ -53,10 +63,7 @@ function main(){
     }
 
     function loss(pred, label){
-        return tf.tidy(() => {
-            // cross entropy with softmax
-            return label.mul(pred.log()).sum(1).mean().mul(tf.tensor1d([-1])).squeeze()
-        });
+        return tf.losses.softmaxCrossEntropy(pred,label,1)
     }
 
        
@@ -70,15 +77,8 @@ function main(){
         let predict  = _.chunk(predict_Tensor.dataSync(),nb_classes) // dataSync() and data() returns flatten data.
         let oneHotVectors = _.chain(predict).map(
             function(row){
-                let oneHotVector = Array.apply(null, Array(nb_classes)).map(Number.prototype.valueOf,0)
-                let index = _.chain(row).reduce(function(prev,current,index){
-                    if(prev.value < current){
-                        prev.value = current;
-                        prev.index = index;
-                    }
-                    return prev
-                    },{index:-1,value:-1}).value().index
-                oneHotVector[index] = 1;
+                let oneHotVector = Array(nb_classes).fill(0)
+                oneHotVector[argMax(row)] = 1;
                 return oneHotVector
             }
         ).value()
@@ -101,13 +101,13 @@ function main(){
     }
 
     for (let i = 0; i <= maxEpoch; i++) {
-        optimizer.minimize(()=>loss(predict(x_train),y_train));
+        optimizer.minimize(()=>loss(predict(x_train_tensor),y_train_tensor));
         if(i%printInterval==0 || i==maxEpoch){
-            log(`[iter ${String(i+1).padStart(4,0)}] loss : ${Number(loss(predict(x_train),y_train).dataSync()).toFixed(3)}  Accuracy : ${accuracy(predicted(predict(x_train)),y_data).toFixed(3)}`)
+            log(`[iter ${String(i+1).padStart(4,0)}] loss : ${Number(loss(predict(x_train_tensor),y_train_tensor).dataSync()).toFixed(3)}  Accuracy : ${accuracy(predicted(predict(x_train_tensor)),y_data).toFixed(3)}`)
         }
 
     }
-    _.zip(predicted(predict(x_train)),y_data).forEach((zipped)=>{
+    _.zip(predicted(predict(x_test_tensor)),y_test).forEach((zipped)=>{
         log(`[${_.isEqual(zipped[0],zipped[1])}] Prediction: ${zipped[0]} True Y: ${zipped[1]}`)
     })
 }

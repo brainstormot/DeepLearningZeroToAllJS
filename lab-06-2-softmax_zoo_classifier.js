@@ -58,11 +58,8 @@ function main(){
             console.log(pred.shape)
             console.log(label.shape)
             return tf.tidy(() => {
-                // cross entropy
-                return tf.add(
-                    label.mul(pred.log())
-                    , tf.mul(tf.onesLike(label).sub(label), tf.onesLike(pred).sub(pred).log())
-                ).mean().mul(tf.tensor1d([-1])).squeeze()
+                // cross entropy with softmax
+                return label.mul(pred.log()).sum(1).mean().mul(tf.tensor1d([-1])).squeeze()
             });
         }
 
@@ -84,8 +81,6 @@ function main(){
          * @return { number } accuracy 
          */
         function accuracy(predicted_labels,true_labels){
-            // console.log(predicted_labels)
-            // console.log(true_labels)
             let matchCount= _.chain(_.zip(predicted_labels,true_labels)).reduce(function(sum,pair){
                 if(_.isEqual(pair[0],pair[1])){
                     return sum+1;
