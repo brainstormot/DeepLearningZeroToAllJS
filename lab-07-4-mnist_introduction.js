@@ -32,6 +32,8 @@ const learning_rate=1e-4
 
 // main function
 function main(){
+    getMNIST()
+    return;
     var x_train_tensor = tf.tensor2d(x_data)
     var y_train_tensor = tf.tensor2d(y_data)
     log(`x_train_tensor : ${x_train_tensor}`)
