@@ -1,30 +1,52 @@
 // var seed = 777
-
-const trueFunction = function(x){
-    return 2*x+1
-}
-const trueFunctionName = "y = 2*x+1"
+console.log("backend : ",tf.getBackend())
+const runButton = document.getElementById('run')
 
 const x_train = [1, 2, 3]
-const y_train = _.chain(x_train).map(trueFunction).value()
-
-const maxEpoch = 2000
-const printInterval = 100
 
 // using d3 and underscore for generating x_ranges, but i believe there should be a better way.
 // x range : [-max(x_train),max(x_train)]
-var x_ranges = _.range(101).map(
+// for rendering chart.
+const x_ranges = _.range(101).map(
     x=>d3.scaleLinear().domain([0,100]).range([_.max(x_train)*-1,_.max(x_train)])(x)
 )
-var y_true = _.chain(x_ranges).map(trueFunction).value()
-// for rendering chart.
 const maxAbsXRange = Math.ceil(_.max(x_ranges.map(value=>Math.abs(value)))) 
 
-// console.log(maxAbsXRange)
-// console.log(["x",...x_ranges])
+const arrayCharts = []
+
+var trueFunctionName = "y = 2*x+1"
+var trueFunction;
+var maxEpoch;
+var printInterval;
+var learningRate;
+
+var y_train;
+var y_true;
+
+runButton.onclick = function(){
+    var a = Number(document.getElementsByName('a')[0].value)
+    var b = Number(document.getElementsByName('b')[0].value)
+    console.log(a)
+    maxEpoch = Number(document.getElementsByName('maxEpoch')[0].value)
+    printInterval = Number(document.getElementsByName('printInterval')[0].value)
+    learningRate = Number(document.getElementsByName('learningRate')[0].value)
+    trueFunctionName = `y = ${a}*x+${b}`
+    trueFunction = function(x){
+        return a*x+b
+    }
+    y_train = _.chain(x_train).map(trueFunction).value()
+    y_true = _.chain(x_ranges).map(trueFunction).value()
+    document.getElementsByClassName('tablinks')[0].click();
+    run();
+}
+
+
+
 
 // main function
-function main(){
+function run(){
+    tf.disposeVariables ()
+    init()
     var tensor_x_train = tf.tensor1d(x_train)
     var tensor_y_train = tf.tensor1d(y_train)
 
@@ -56,8 +78,7 @@ function main(){
         });
     }
 
-    const learning_rate=0.01
-    optimizer = tf.train.sgd(learning_rate)
+    optimizer = tf.train.sgd(learningRate)
 
     // before training
     renderChart(
@@ -70,7 +91,7 @@ function main(){
         ,b.dataSync()[0] // b_pred
     )
 
-    for (let i = 0; i < maxEpoch; i++) {
+    for (let i = 1; i <= maxEpoch; i++) {
         optimizer.minimize(()=>loss(predict(tensor_x_train),tensor_y_train));
         if(i%printInterval==0){
             log(`[iter ${i+1}] loss : ${loss(predict(tensor_x_train),tensor_y_train).dataSync()}`)
@@ -100,12 +121,49 @@ function main(){
     )
 }
 
+function init(){
+    var slider = document.getElementById("epochRange");
+    slider.max = Math.floor(maxEpoch/printInterval) + 1;
+    slider.min = 0;
+    var output = document.getElementById("epochValue");
+    makeTextHTML();
+    slider.oninput = function() {
+        makeTextHTML();
+    }
+
+    function makeTextHTML(){
+        if(slider.max === slider.value){
+            output.innerHTML = `Final result (epoch : ${maxEpoch})`;            
+        }else{
+            output.innerHTML = `epoch : ${slider.value*printInterval}`;
+        }
+    }
+}
+
+function openTab(evt,id){
+    tabcontent = document.getElementsByClassName("tabcontent");
+    for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+    }
+
+    tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+
+    document.getElementById(id).style.display = "block";
+    evt.currentTarget.className += " active";
+}
 
 function renderChart(x_ranges,i,y_preds,W_pred,b_pred){
-    let canvas = document.getElementById('canvas') 
+    let output_2 = document.getElementById('output_2') 
     let newDiv = document.createElement('div')
     newDiv.setAttribute("id", `iter${i+1}`)
-    canvas.appendChild(newDiv)
+    // newDiv.setAttribute("style", `inline-block`)
+    newDiv.style = "display:inline-block;width:340px;"
+    // newDiv.setAttribute("margin", `inline-block`)
+    // newDiv.setAttribute("width", `400px`)
+    output_2.appendChild(newDiv)
     
     //using billboard.js
     var chart = bb.generate({
@@ -113,7 +171,7 @@ function renderChart(x_ranges,i,y_preds,W_pred,b_pred){
             x:"x"
             ,"columns": [
                 ["x",...x_ranges]
-                ,[`[iter ${i+1}] y = ${W_pred.toFixed(3)}*x + (${b_pred.toFixed(3)})`,...y_preds]
+                ,[`[iter ${i}] y = ${W_pred.toFixed(3)}*x + (${b_pred.toFixed(3)})`,...y_preds]
                 ,[`[true] ${trueFunctionName}`, ...y_true]
              ]
         }
