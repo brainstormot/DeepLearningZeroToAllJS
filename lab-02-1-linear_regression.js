@@ -1,5 +1,5 @@
 // var seed = 777
-console.log("backend : ",tf.getBackend())
+log("backend : "+ tf.getBackend())
 const runButton = document.getElementById('run')
 
 const x_train = [1, 2, 3]
@@ -23,8 +23,6 @@ var learningRate;
 var y_train;
 var y_true;
 
-var worker
-
 runButton.onclick = function(){
     var a = Number(document.getElementsByName('a')[0].value)
     var b = Number(document.getElementsByName('b')[0].value)
@@ -38,49 +36,104 @@ runButton.onclick = function(){
     }
     y_train = _.chain(x_train).map(trueFunction).value()
     y_true = _.chain(x_ranges).map(trueFunction).value()
-    if(window.Worker){
-        console.log("worker available.")
-        worker = new Worker("lab-02-1-linear_regression.worker.js")
-        worker.onmessage = function (event) {
-            console.log("Worker said : ",event);
-        };
-    }else{
-        alert("Web Worker is not available")
-        console.log("Web Worker is not available")
-    }
-    // run();
+    run();
 }
 
+async function run(){
+    tf.disposeVariables ()
+    init()
+    var tensor_x_train = tf.tensor1d(x_train)
+    var tensor_y_train = tf.tensor1d(y_train)
 
+    var W = tf.variable(
+            tf.randomNormal([1],0,1,'float32') // values
+            , true // trainable 
+            , 'weight' // name
+            , 'float32' // dtype
+            )
+    var b = tf.variable(
+        tf.randomNormal([1],0,1,'float32') // values
+        , true // trainable 
+        , 'bias' // name
+        , 'float32' // dtype
+        )
+    log(`init W : ${W.dataSync()}`)
+    log(`init b : ${b.dataSync()}`)
 
-function init(){
-    var slider = document.getElementById("epochRange");
-    slider.max = Math.floor(maxEpoch/printInterval) + 1;
-    slider.min = 0;
-    var output = document.getElementById("epochValue");
-    makeTextHTML();
-    slider.oninput = function() {
-        makeTextHTML();
+    // using tf.tidy to avoid memory leak. But, in this case, I suppose that tf.tidy is not necessary
+    function predict(x){
+        return tf.tidy(() => {
+            return x.mul(W).add(b)
+        });
     }
 
-    function makeTextHTML(){
-        if(slider.max === slider.value){
-            output.innerHTML = `Final result (epoch : ${maxEpoch})`;            
-        }else{
-            output.innerHTML = `epoch : ${slider.value*printInterval}`;
+    function loss(pred, label){
+        return tf.tidy(() => {
+            return pred.sub(label).square().mean();
+        });
+    }
+
+    optimizer = tf.train.sgd(learningRate)
+
+    // before training
+    renderChart(
+        x_ranges // x domain range
+        ,0 // iteration - 1
+        ,x_ranges.map(function(x){ // y_pred
+            return Number(W.dataSync()[0]*x+b.dataSync()[0]).toFixed(4)
+        }) 
+        ,W.dataSync()[0] // W_pred
+        ,b.dataSync()[0] // b_pred
+    )
+
+    await tf.nextFrame();
+    for (let i = 1; i <= maxEpoch; i++) {
+        optimizer.minimize(()=>loss(predict(tensor_x_train),tensor_y_train));
+        if(i%printInterval==0){
+            log(`[iter ${i+1}] loss : ${loss(predict(tensor_x_train),tensor_y_train).dataSync()}`)
+            let W_pred = W.dataSync()[0];
+            // console.log(W_pred)
+            let b_pred = b.dataSync()[0];
+            // console.log(b_pred)        
+            let y_preds = x_ranges.map(function(x){
+                return Number(W_pred*x+b_pred).toFixed(4)
+            })
+            // console.log(["y_preds", ...y_preds])
+            renderChart(x_ranges,i,y_preds,W_pred,b_pred)
+            await tf.nextFrame()
         }
+    }
+
+    // after training
+    log(`[Result] W: ${W.dataSync()}, b: ${b.dataSync()}`)
+    renderChart(
+        x_ranges
+        ,maxEpoch
+        ,x_ranges.map(function(x){
+            return Number(W.dataSync()[0]*x+b.dataSync()[0]).toFixed(4)
+        })
+        ,W.dataSync()[0]
+        ,b.dataSync()[0]
+    )
+    await tf.nextFrame()    
+}
+
+function init(){
+    let output = document.getElementById('output')
+    while (output.firstChild) {
+        output.removeChild(output.firstChild);
     }
 }
 
 function renderChart(x_ranges,i,y_preds,W_pred,b_pred){
-    let output_2 = document.getElementById('output_2') 
+    let output = document.getElementById('output') 
     let newDiv = document.createElement('div')
     newDiv.setAttribute("id", `iter${i+1}`)
     // newDiv.setAttribute("style", `inline-block`)
     newDiv.style = "display:inline-block;width:340px;"
     // newDiv.setAttribute("margin", `inline-block`)
     // newDiv.setAttribute("width", `400px`)
-    output_2.appendChild(newDiv)
+    output.appendChild(newDiv)
     
     //using billboard.js
     var chart = bb.generate({

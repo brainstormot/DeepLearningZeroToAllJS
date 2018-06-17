@@ -12,21 +12,6 @@
                 text-align: right;
                 width:60px;
             }
-            .slider {
-                -webkit-appearance: none;  /* Override default CSS styles */
-                appearance: none;
-                width: 300px; /* Full-width */
-                height: 25px; /* Specified height */
-                background: #d3d3d3; /* Grey background */
-                outline: none; /* Remove outline */
-                opacity: 0.7; /* Set transparency (for mouse-over effects on hover) */
-                -webkit-transition: .2s; /* 0.2 seconds transition on hover */
-                transition: opacity .2s;
-            }
-            /* Mouse-over effects */
-            .slider:hover {
-                opacity: 1; /* Fully shown on mouse-over */
-            }
         </style>
     </head>
     <body style="overflow: hidden;">
@@ -54,7 +39,7 @@
                 <button id="run">Run</button>
             </section>
             <h3>Results</h3>
-            <section class="output">
+            <section id="output">
 
             </section>
         </section>
@@ -62,7 +47,7 @@
             <ul id="console"><ul>
         </footer>
         <script type="text/javascript" src="./lib/underscore/underscore-min.js"></script>
-        <script type="text/javascript" src="./lib/tfjs/tfjs@0.11.2.js"></script>
+        <script type="text/javascript" src="./lib/tfjs/tfjs@0.11.6.js"></script>
         <script type="text/javascript" src="./lib/visual/d3.v4.min.js"></script>
         <script type="text/javascript" src="./lib/visual/billboard.min.js"></script>
         <script type="text/javascript" src="./lib/_console/_console.js"></script>
