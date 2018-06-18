@@ -23,7 +23,7 @@ const printInterval = 200
 const learning_rate=0.1
 
 // main function
-function main(){
+async function main(){
     var x_train = tf.tensor2d(x_data)
     var y_train = tf.tensor2d(y_data)
     log(`x_train : ${x_train}`)
@@ -45,6 +45,8 @@ function main(){
     log(`init W : ${ToStackedArray(W)}`)
     log(`init b : ${ToStackedArray(b)}`)
     log(`learning_rate : ${learning_rate}`) 
+
+    await tf.nextFrame()
 
     function predict(x){
         return tf.tidy(() => {
@@ -104,6 +106,7 @@ function main(){
         optimizer.minimize(()=>loss(predict(x_train),y_train));
         if(i%printInterval==0 || i==maxEpoch){
             log(`[iter ${String(i+1).padStart(4,0)}] loss : ${Number(loss(predict(x_train),y_train).dataSync()).toFixed(3)}  Accuracy : ${accuracy(predicted(predict(x_train)),y_data).toFixed(3)}`)
+            await tf.nextFrame()
         }
 
     }

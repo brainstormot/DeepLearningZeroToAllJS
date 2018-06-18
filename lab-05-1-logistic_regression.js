@@ -18,7 +18,7 @@ const maxEpoch = 10001
 const printInterval = 200
 
 // main function
-function main(){
+async function main(){
     var x_train = tf.tensor2d(x_data)
     var y_train = tf.tensor2d(y_data)
     log(`x_train : ${x_train}`)
@@ -39,6 +39,7 @@ function main(){
 
     log(`init W : ${W.dataSync()}`)
     log(`init b : ${b.dataSync()}`)
+    await tf.nextFrame()
 
     function predict(x){
         return tf.tidy(() => {
@@ -92,6 +93,7 @@ function main(){
             log(`[iter ${i+1}] loss : ${loss(predict(x_train),y_train)}`)
             log(`[iter ${i+1}] Prediction : ${predicted(predict(x_train))}`)
             log(`[iter ${i+1}] Accuracy : ${accuracy(predicted(predict(x_train)),_.flatten(y_data))}`)
+            await tf.nextFrame()
         }
     }
 

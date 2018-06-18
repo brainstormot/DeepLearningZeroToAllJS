@@ -10,7 +10,7 @@ const maxEpoch = 2000
 const printInterval = 100
 
 // main function
-function main(){
+async function main(){
     var x1_train = tf.tensor1d(x1_data)
     var x2_train = tf.tensor1d(x2_data)
     var x3_train = tf.tensor1d(x3_data)
@@ -71,6 +71,7 @@ function main(){
         if(i%printInterval==0){
             log(`[iter ${i+1}] loss : ${loss(predict(xArray),y_train).dataSync()}`)
             log(`[iter ${i+1}] Prediction:: ${predict(xArray).dataSync()}`)
+            await tf.nextFrame();
         }
     }
 

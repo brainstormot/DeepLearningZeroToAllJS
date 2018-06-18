@@ -8,11 +8,10 @@
 
 
 // main function
-function main(){
-    
-    d3.text("./data-03-diabetes.csv", function(text) {
+function main(){    
+    d3.text("./data-03-diabetes.csv", async function(text) {
         rows = d3.csvParseRows(text)
-        console.log(rows);
+        // console.log(rows);
 
         const x_data = _.chain(rows).map(function(row){
             return _.chain(row).first(8).map(x=>Number(x)).value()
@@ -20,11 +19,11 @@ function main(){
         const y_data =  _.chain(rows).map(function(row){
             return _.chain(row).last().map(x=>Number(x)).value()
         }).value()
-        console.log(x_data)
-        console.log(y_data)
+        // console.log(x_data)
+        // console.log(y_data)
 
         const maxEpoch = 10001
-        const printInterval = 200
+        const printInterval = 1000
         
         var x_train = tf.tensor2d(x_data)
         var y_train = tf.tensor2d(y_data)
@@ -64,7 +63,9 @@ function main(){
         }
     
         const learning_rate=0.01
-        log(`learning_rate : ${learning_rate}`) 
+        log(`learning_rate : ${learning_rate}`)
+
+        await tf.nextFrame()
             
         optimizer = tf.train.sgd(learning_rate)
     
@@ -100,6 +101,7 @@ function main(){
                 // console.log(document.getElementById('console').childNodes)
                 // log(`[iter ${i+1}] Prediction : ${predicted(predict(x_train))}`)
                 log(`[iter ${i+1}] Accuracy : ${accuracy(predicted(predict(x_train)),_.flatten(y_data))}`)
+                await tf.nextFrame()
             }
         }
     

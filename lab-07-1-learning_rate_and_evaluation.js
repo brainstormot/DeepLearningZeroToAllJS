@@ -26,12 +26,12 @@ const y_test = [[0, 0, 1],
 
 const nb_classes = 3
 
-const maxEpoch = 501
-const printInterval = 20
-const learning_rate=1e-4
+const maxEpoch = 201
+const printInterval = 1
+const learning_rate=0.1
 
 // main function
-function main(){
+async function main(){
     var x_train_tensor = tf.tensor2d(x_data)
     var y_train_tensor = tf.tensor2d(y_data)
     log(`x_train_tensor : ${x_train_tensor}`)
@@ -56,6 +56,8 @@ function main(){
     log(`init b : ${ToStackedArray(b)}`)
     log(`learning_rate : ${learning_rate}`) 
 
+    await tf.nextFrame()
+
     function predict(x){
         return tf.tidy(() => {
             return x.matMul(W).add(b).softmax()
@@ -64,7 +66,10 @@ function main(){
 
     function loss(pred, label){
         return tf.tidy(() => {
-            return tf.losses.softmaxCrossEntropy(pred,label,1).squeeze()
+            console.log("pred",ToStackedArray(pred))
+            console.log("label",ToStackedArray(label))
+            tf.losses.softmaxCrossEntropy(pred,label,-1).mean().print();
+            return tf.losses.softmaxCrossEntropy(pred,label,1).mean();
         })
     }
 
@@ -84,6 +89,7 @@ function main(){
                 return oneHotVector
             }
         ).value()
+        // console.log(oneHotVectors)
         return oneHotVectors;
     }
     /**
@@ -106,6 +112,7 @@ function main(){
         optimizer.minimize(()=>loss(predict(x_train_tensor),y_train_tensor));
         if(i%printInterval==0 || i==maxEpoch){
             log(`[iter ${String(i+1).padStart(4,0)}] loss : ${Number(loss(predict(x_train_tensor),y_train_tensor).dataSync()).toFixed(3)}  Accuracy : ${accuracy(predicted(predict(x_train_tensor)),y_data).toFixed(3)}`)
+            await tf.nextFrame()
         }
 
     }

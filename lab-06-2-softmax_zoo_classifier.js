@@ -8,12 +8,12 @@ const learning_rate=0.1
 
 // main function
 function main(){
-    d3.text("./data-04-zoo.csv", function(text) {
+    d3.text("./data-04-zoo.csv",async function(text) {
         rows = d3.csvParseRows(text)
         rows = _.filter(rows,function(row){
             return !row[0].startsWith('#')
         })
-        console.log(rows);
+        // console.log(rows);
 
         const x_data = _.chain(rows).map(function(row){
             return _.chain(row).first(num_w).map(x=>Number(x)).value()
@@ -22,8 +22,8 @@ function main(){
         const y_data =  _.chain(rows).map(function(row){
             return _.chain(row).last().map(x=>Number(x)).value()
         }).value()
-        console.log(x_data)
-        console.log(y_data)
+        // console.log(x_data)
+        // console.log(y_data)
         var x_train = tf.tensor2d(x_data)
         var y_train = tf.tensor2d(y_data)
         var y_one_hot = toOneHot(y_train,nb_classes)
@@ -48,6 +48,8 @@ function main(){
         log(`init b : ${ToStackedArray(b,3)}`)
         log(`learning_rate : ${learning_rate}`) 
 
+        await tf.nextFrame()
+
         function predict(x){
             return tf.tidy(() => {
                 return x.matMul(W).add(b).softmax()
@@ -55,8 +57,8 @@ function main(){
         }
 
         function loss(pred, label){
-            console.log(pred.shape)
-            console.log(label.shape)
+            // console.log(pred.shape)
+            // console.log(label.shape)
             return tf.tidy(() => {
                 // cross entropy with softmax
                 return label.mul(pred.log()).sum(1).mean().mul(tf.tensor1d([-1])).squeeze()
@@ -96,6 +98,7 @@ function main(){
             optimizer.minimize(()=>loss(predict(x_train),y_one_hot));
             if(i%printInterval==0 || i==maxEpoch){
                 log(`[iter ${String(i+1).padStart(4,0)}] loss : ${Number(loss(predict(x_train),y_one_hot).dataSync()).toFixed(3)}  Accuracy : ${accuracy(predicted(predict(x_train)),_.flatten(y_data)).toFixed(3)}`)
+                await tf.nextFrame()
             }
         }
 
