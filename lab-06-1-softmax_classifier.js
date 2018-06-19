@@ -57,7 +57,7 @@ async function main(){
     function loss(pred, label){
         return tf.tidy(() => {
             // cross entropy with softmax
-            return label.mul(pred.log()).sum(1).mean().mul(tf.tensor1d([-1])).squeeze()
+            return label.mul(pred.log()).sum(1).mean().neg().squeeze()
         });
     }
 

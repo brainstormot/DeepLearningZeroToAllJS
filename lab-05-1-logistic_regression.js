@@ -53,7 +53,7 @@ async function main(){
             return tf.add(
                 label.mul(pred.log())
                 , tf.mul(tf.ones([1]).sub(label), tf.ones([1]).sub(pred).log())
-            ).mean().mul(tf.tensor1d([-1])).squeeze()
+            ).mean().neg().squeeze()
         });
     }
 

@@ -76,22 +76,7 @@ async function main(){
        
     optimizer = tf.train.sgd(learning_rate)
 
-    /**
-     *  @param {object} predict Tensor[x_data.legnth ,1]
-     *  @return {object} number[x_data.legnth ,1] : predicted label 
-     */
-    function predicted(predict_Tensor){
-        let predict  = _.chunk(predict_Tensor.dataSync(),nb_classes) // dataSync() and data() returns flatten data.
-        let oneHotVectors = _.chain(predict).map(
-            function(row){
-                let oneHotVector = Array(nb_classes).fill(0)
-                oneHotVector[argMax(row)] = 1;
-                return oneHotVector
-            }
-        ).value()
-        // console.log(oneHotVectors)
-        return oneHotVectors;
-    }
+
     /**
      * @param { number[x_data.legnth ,1] } predicted_labels
      * @param { number[x_data.legnth ,1] } true_labels
