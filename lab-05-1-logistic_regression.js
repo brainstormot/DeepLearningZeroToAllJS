@@ -14,7 +14,7 @@ const y_data = [[0],
                 [1],
                 [1]]
 
-const maxEpoch = 10001
+const maxEpoch = 2001
 const printInterval = 200
 
 // main function
@@ -57,7 +57,7 @@ async function main(){
         });
     }
 
-    const learning_rate=0.01
+    const learning_rate=0.05
     log(`learning_rate : ${learning_rate}`) 
        
     optimizer = tf.train.sgd(learning_rate)
@@ -68,31 +68,31 @@ async function main(){
      */
     function predicted(predict){
         return _.chain(predict.dataSync()).map(function(value){
-            return value > 0.5 ? 1 : 0; 
+            return value > 0.5 ? [1] : [0]; 
         }).value()
     }
-    /**
-     * @param { number[x_data.legnth ,1] } predicted_labels
-     * @param { number[x_data.legnth ,1] } true_labels
-     * @return { number } accuracy 
-     */
-    function accuracy(predicted_labels,true_labels){
-        let matchCount= _.chain(_.zip(predicted_labels,true_labels)).reduce(function(sum,pair){
-            if(pair[0]===pair[1]){
-                return sum+1;
-            }else{
-                return sum;
-            }
-        },0).value()
-        return matchCount / predicted_labels.length
-    }
+    // /**
+    //  * @param { number[x_data.legnth ,1] } predicted_labels
+    //  * @param { number[x_data.legnth ,1] } true_labels
+    //  * @return { number } accuracy 
+    //  */
+    // function accuracy(predicted_labels,true_labels){
+    //     let matchCount= _.chain(_.zip(predicted_labels,true_labels)).reduce(function(sum,pair){
+    //         if(pair[0]===pair[1]){
+    //             return sum+1;
+    //         }else{
+    //             return sum;
+    //         }
+    //     },0).value()
+    //     return matchCount / predicted_labels.length
+    // }
 
     for (let i = 0; i <= maxEpoch; i++) {
         optimizer.minimize(()=>loss(predict(x_train),y_train));
         if(i%printInterval==0){
             log(`[iter ${i+1}] loss : ${loss(predict(x_train),y_train)}`)
             log(`[iter ${i+1}] Prediction : ${predicted(predict(x_train))}`)
-            log(`[iter ${i+1}] Accuracy : ${accuracy(predicted(predict(x_train)),_.flatten(y_data))}`)
+            log(`[iter ${i+1}] Accuracy : ${tfUtils.accuracy(predicted(predict(x_train)),y_data)}`)
             await tf.nextFrame()
         }
     }
@@ -100,5 +100,5 @@ async function main(){
     // after training
     log(`[final result] loss : ${loss(predict(x_train),y_train)}`)
     log(`[final result] Prediction : ${predicted(predict(x_train))}`)
-    log(`[final result] Accuracy : ${accuracy(predicted(predict(x_train)),_.flatten(y_data))}`)
+    log(`[final result] Accuracy : ${tfUtils.accuracy(predicted(predict(x_train)),y_data)}`)
 }
