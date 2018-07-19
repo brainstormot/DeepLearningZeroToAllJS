@@ -1,0 +1,37 @@
+{
+  "name": "deeplearningzerotoalljs",
+  "version": "1.0.0",
+  "description": "Tensorflow.js implementation of DeepLearningZeroToAll",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "build": "tsc ./src",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "server": "simplehttpserver ./dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/brainstormot/DeepLearningZeroToAllJS.git"
+  },
+  "keywords": [
+    "tensorflow.js",
+    "javascript",
+    "typescript"
+  ],
+  "author": "Hyuck Kang",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/brainstormot/DeepLearningZeroToAllJS/issues"
+  },
+  "homepage": "https://github.com/brainstormot/DeepLearningZeroToAllJS#readme",
+  "dependencies": {
+    "@tensorflow/tfjs": "^0.12.0",
+    "d3": "^5.5.0"
+  },
+  "devDependencies": {
+    "simplehttpserver": "^0.1.1",
+    "typescript": "^2.9.2",
+    "webpack": "^4.16.1"
+  }
+}
