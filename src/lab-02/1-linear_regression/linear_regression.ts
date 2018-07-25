@@ -1,6 +1,7 @@
 //// <reference path="../../../node_modules/@tensorflow/tfjs/dist/index.d.ts" />
+//// <reference path="../../../node_modules/@types/d3/index.d.ts" />
 // import * as tf from '@tensorflow/tfjs/dist';
-import * as d3 from '../../lib/d3';
+import * as d3 from 'd3';
 
 let svg = d3.select("body").append("svg");
 const w = 960;

@@ -12,7 +12,8 @@
     "build": "npm run build:ts && npm run build:html && npm run build:css",
     "server": "http-server ./dist -o",
     "clean:dist": "rm -rf dist",
-    "clean": "npm run clean:dist"
+    "clean": "npm run clean:dist",
+    "test": "browserify -p [tsify] src/lab-02/1-linear_regression/linear_regression.ts -o dist/lab-02/1-linear_regression/linear_regression.js -x d3"
   },
   "repository": {
     "type": "git",
@@ -36,9 +37,16 @@
   },
   "devDependencies": {
     "browserify": "^16.2.2",
+    "browserify-shim": "^3.8.14",
     "cpy-cli": "^2.0.0",
     "http-server": "^0.11.1",
     "tsify": "^4.0.0",
     "typescript": "^2.9.2"
-  }
+  },
+  "browserify": {
+    "transform": [
+      "browserify-shim"
+    ]
+  },
+  "browserify-shim": "./config/shim.config.js"
 }
