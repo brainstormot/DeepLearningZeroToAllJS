@@ -6,14 +6,9 @@
     "lib": "lib"
   },
   "scripts": {
-    "build:ts": "tsc",
-    "build:html": "cpy '**/*.html' '../dist/' --cwd=src --parents --rename=index.html",
-    "build:css": "cpy '**/*.css' '../dist/' --cwd=src --parents",
-    "build": "npm run build:ts && npm run build:html && npm run build:css",
-    "server": "http-server ./dist -o",
-    "clean:dist": "rm -rf dist",
-    "clean": "npm run clean:dist",
-    "test": "browserify -p [tsify] src/lab-02/1-linear_regression/linear_regression.ts -o dist/lab-02/1-linear_regression/linear_regression.js -x d3"
+    "build": "gulp build",
+    "start": "gulp server",
+    "clean": "gulp clean"
   },
   "repository": {
     "type": "git",
@@ -38,12 +33,13 @@
   "devDependencies": {
     "browserify": "^16.2.2",
     "browserify-shim": "^3.8.14",
-    "cpy-cli": "^2.0.0",
     "gulp": "^3.9.1",
-    "gulp-browserify": "^0.5.1",
-    "http-server": "^0.11.1",
+    "gulp-clean": "^0.4.0",
+    "gulp-connect": "^5.5.0",
+    "gulp-rename": "^1.4.0",
     "tsify": "^4.0.0",
-    "typescript": "^2.9.2"
+    "typescript": "^2.9.2",
+    "vinyl-source-stream": "^2.0.0"
   },
   "browserify": {
     "transform": [
