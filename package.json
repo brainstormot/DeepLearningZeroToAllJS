@@ -7,7 +7,7 @@
   },
   "scripts": {
     "build": "gulp build",
-    "start": "gulp server",
+    "start": "gulp run",
     "clean": "gulp clean"
   },
   "repository": {
