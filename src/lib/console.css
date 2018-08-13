@@ -1,0 +1,17 @@
+ul#console {
+	list-style-type: none;
+	font-family: "Courier New", Courier, monospace;
+	font-size: 14px;
+	line-height: 25px;
+	padding-left: 5px;
+}
+ul#console li {
+	border-bottom: solid 1px #80808038;
+}
+
+footer{
+	height: 25%;
+	border-style: solid;
+	border-width: 1px; 
+	overflow-y: scroll;
+}

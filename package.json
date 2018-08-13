@@ -6,7 +6,7 @@
     "lib": "lib"
   },
   "scripts": {
-    "build": "npm run clean && gulp build",
+    "build": "gulp clean && gulp build",
     "start": "npm run build && gulp run",
     "clean": "gulp clean"
   },

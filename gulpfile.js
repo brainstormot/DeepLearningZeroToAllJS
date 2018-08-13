@@ -14,6 +14,7 @@ const baseDir = __dirname
 const srcPath = path.join(baseDir,"src")
 const distPath = path.join(baseDir,"dist")
 const distLibPath = path.join(baseDir,"dist/lib")
+const srcLibPath = path.join(baseDir,"src/lib")
 
 
 
@@ -65,6 +66,24 @@ async function build_html() {
 
 async function build_lib() {
     try{
+        let filePaths = await readdir(srcLibPath);
+        let tsFilePaths = filePaths.filter(_path => path.extname(_path[1]) === '.ts')
+        let notTsFilePaths = filePaths.filter(_path => path.extname(_path[1]) !== '.ts');
+
+        await Promise.all(tsFilePaths.map(async function(tsfile){
+            var bundleStream = browserify(path.join(...tsfile)).plugin('tsify').bundle()
+            // var bundleStream = browserify(path.join(...tsfile).plugin('tsify').bundle()
+            bundleStream
+                .pipe(source(tsfile[1]))
+                .pipe(rename(tsfile[1].replace('.ts','.js')))
+                .pipe(gulp.dest(tsfile[0].replace(srcPath,distPath)))
+        }))
+
+        for(let notTsfilePath of notTsFilePaths){
+            gulp.src(path.join(notTsfilePath[0],notTsfilePath[1]))
+                .pipe(gulp.dest(distLibPath))    
+        }
+
         for(let libName in libConfig){
             gulp.src(path.join(baseDir,libConfig[libName]))
                 .pipe(rename(libName))
@@ -83,7 +102,7 @@ async function build_ts(){
         // console.log(tsfiles)
     
         await Promise.all(tsfiles.map(async function(tsfile){
-            var bundleStream = browserify(path.join(...tsfile)).plugin('tsify').bundle()
+            var bundleStream = browserify(path.join(...tsfile)).plugin('tsify').ignore('../../lib/console').bundle()
             // var bundleStream = browserify(path.join(...tsfile).plugin('tsify').bundle()
             bundleStream
                 .pipe(source(tsfile[1]))
