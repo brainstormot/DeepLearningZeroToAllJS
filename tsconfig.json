@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
     "module": "umd",
-    "noImplicitAny": true,
+    "moduleResolution": "node"
+    ,"noImplicitAny": true,
     "sourceMap": true,
     "removeComments": true,
     "preserveConstEnums": true,
@@ -19,8 +20,5 @@
     "experimentalDecorators": true
     ,"rootDir": "./src"
     ,"outDir": "./dist"
-  },
-  "paths": {
-    "*": ["types/*"]
   }
 }
