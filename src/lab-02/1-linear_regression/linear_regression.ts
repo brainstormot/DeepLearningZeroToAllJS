@@ -1,7 +1,7 @@
 // import * as d3 from 'd3';
 import * as c3 from 'c3';
 import * as tf from '@tensorflow/tfjs';
-import {log} from '../../lib/console';
+import {log} from '../../lib/terminal';
 
 log("HI");
 

@@ -1,11 +1,11 @@
-ul#console {
+ul#terminal {
 	list-style-type: none;
 	font-family: "Courier New", Courier, monospace;
 	font-size: 14px;
 	line-height: 25px;
 	padding-left: 5px;
 }
-ul#console li {
+ul#terminal li {
 	border-bottom: solid 1px #80808038;
 }
 
