@@ -21,11 +21,11 @@ interface Inputs{
 
 runButton.onclick = ()=>{
     let inputs:Inputs = {
-        maxEpoch:Number(document.getElementById('maxEpoch').getAttribute('value'))
-        , printInterval : Number(document.getElementById('printInterval').getAttribute('value'))
-        , learningRate : Number(document.getElementById('learningRate').getAttribute('value'))
-        , a : Number(document.getElementById('variable_a').getAttribute('value'))
-        , b : Number(document.getElementById('variable_b').getAttribute('value'))
+        maxEpoch:Number((document.getElementById('maxEpoch') as HTMLInputElement).value)
+        , printInterval : Number((document.getElementById('printInterval') as HTMLInputElement).value)
+        , learningRate : Number((document.getElementById('learningRate') as HTMLInputElement).value)
+        , a : Number((document.getElementById('variable_a') as HTMLInputElement).value)
+        , b : Number((document.getElementById('variable_b') as HTMLInputElement).value)
         , train_x_coords: (document.getElementById('train_x_coords') as HTMLInputElement).value.split(",").map(x=> Number(x)).filter(x=>!isNaN(x))
         , trueFunctionName : ()=>{
             return `y = ${inputs.a}*x+${inputs.b}`
@@ -38,7 +38,7 @@ runButton.onclick = ()=>{
     
     // y_train = _.chain(x_train).map(trueFunction).value()
     // y_true = _.chain(x_ranges).map(trueFunction).value()
-    run(inputs);
+    run(inputs)
 }
 
 function clean(){
@@ -50,54 +50,91 @@ function clean(){
 
 async function run(inputs:Inputs){
     clean();
-    tf.disposeVariables ();
+    tf.disposeVariables();
 
-    const x_coords:number[] = nj.arange(Math.min(...inputs.train_x_coords),Math.max(...inputs.train_x_coords), 0.05).tolist();
+    // const x_coords:number[] = nj.arange(Math.min(...inputs.train_x_coords),Math.max(...inputs.train_x_coords), 0.05).tolist();
+    const xMaxAbsCoord:number = Math.max(5,Math.abs(Math.min(...inputs.train_x_coords)),Math.abs(Math.max(...inputs.train_x_coords)))
+    const x_coords:number[] = nj.arange(-xMaxAbsCoord,xMaxAbsCoord, 0.1).tolist();
     const train_y_coords:number[] = inputs.train_x_coords.map(x=>inputs.trueFunction(x));
     const true_y_coords:number[] = x_coords.map(x=>inputs.trueFunction(x));
 
     const x_range:number[] = [Math.min(...x_coords),Math.max(...x_coords)]
     const y_range:number[] = [Math.min(...true_y_coords),Math.max(...true_y_coords)]
     
-    console.log("x_coords",x_coords)
-    log(`true_x_range : ${x_range}`)
-    log(`true_y_range : ${y_range}`)
+    // console.log("x_coords",x_coords)
+    log(`true_x_range : [${x_range.map((x)=>x.toPrecision(4))}]`)
+    log(`true_y_range : [${y_range.map((x)=>x.toPrecision(4))}]`)
 
-    // const tensor_x_train = tf.tensor1d(inputs.train_x_coords)
-    // const tensor_y_train = tf.tensor1d(train_y_coords);
+    const tensor_x_train = tf.tensor1d(inputs.train_x_coords)
+    const tensor_y_train = tf.tensor1d(train_y_coords);
 
-    var W:tf.Tensor1D = tf.variable(
+    let W:tf.Tensor1D = tf.variable(
         tf.randomNormal([1],0,1,'float32') // values
         , true // trainable 
         , 'weight' // name
         , 'float32' // dtype
         )
-    var b:tf.Tensor1D = tf.variable(
+    let b:tf.Tensor1D = tf.variable(
         tf.randomNormal([1],0,1,'float32') // values
         , true // trainable 
         , 'bias' // name
         , 'float32' // dtype
         )
-    log(`init W : ${W.dataSync()}`)
-    log(`init b : ${b.dataSync()}`)
+    log(`init W : ${Number(W.dataSync()).toPrecision(4)}`)
+    log(`init b : ${Number(b.dataSync()).toPrecision(4)}`)
 
-    // function predict(x:tf.Tensor1D):tf.Tensor1D{
-    //     return tf.tidy(() => {
-    //         return x.mul(W).add(b)
-    //     });
-    // }
+    function predict(x:tf.Tensor1D):tf.Tensor1D{
+        return tf.tidy(() => {
+            return x.mul(W).add(b)
+        });
+    }
 
-    // function loss(pred:tf.Tensor1D, label:tf.Tensor1D):tf.Tensor1D{
-    //     return tf.tidy(() => {
-    //         return pred.sub(label).square().mean();
-    //     });
-    // }
+    function loss(pred:tf.Tensor1D, label:tf.Tensor1D):tf.Tensor<any>{
+        return tf.tidy(() => {
+            return pred.sub(label).square().mean();
+        });
+    }
 
-    // const optimizer = tf.train.sgd(inputs.learningRate)
+    const optimizer = tf.train.sgd(inputs.learningRate)
 
     renderChart({
         true_function_name:inputs.trueFunctionName()
         ,iter:0
+        ,x_coords:x_coords
+        ,true_y_coords:true_y_coords
+        ,train_x_coords:inputs.train_x_coords
+        ,train_y_coords:train_y_coords
+        ,x_range:x_range
+        ,y_range:y_range
+        ,W:W.dataSync()[0]
+        ,b:b.dataSync()[0]
+    });
+
+    await tf.nextFrame();
+    for (let i = 1; i <= inputs.maxEpoch; i++) {
+        optimizer.minimize(()=>loss(predict(tensor_x_train),tensor_y_train));
+        if(i%inputs.printInterval==0){
+            log(`[iter ${i}] loss : ${Number(loss(predict(tensor_x_train),tensor_y_train).dataSync()).toExponential()}`)
+            renderChart({
+                true_function_name:inputs.trueFunctionName()
+                ,iter:i
+                ,x_coords:x_coords
+                ,true_y_coords:true_y_coords
+                ,train_x_coords:inputs.train_x_coords
+                ,train_y_coords:train_y_coords
+                ,x_range:x_range
+                ,y_range:y_range
+                ,W:W.dataSync()[0]
+                ,b:b.dataSync()[0]
+            });
+            await tf.nextFrame()
+        }
+    }
+
+    log(`[Result] W: ${Number(W.dataSync()).toPrecision(4)}, b: ${Number(b.dataSync()).toPrecision(4)}`)
+    renderChart({
+        true_function_name:inputs.trueFunctionName()
+        ,iter:inputs.maxEpoch
         ,x_coords:x_coords
         ,true_y_coords:true_y_coords
         ,train_x_coords:inputs.train_x_coords
@@ -146,9 +183,9 @@ function generateChartConfiguration(chartInput:ChartInput):c3.ChartConfiguration
             }
             ,names:{
                 true_y: `[True] ${chartInput.true_function_name}`
-                ,pred_y: `'[Pred] ${chartInput.W.toFixed(3)}*x + (${chartInput.b.toFixed(3)})`
+                ,pred_y: `'[Pred] ${chartInput.W.toPrecision(4)}*x + (${chartInput.b.toPrecision(4)})`
                 ,train_y: `training points`
-            }
+            },
         },
         axis: {
             x: {
@@ -164,6 +201,10 @@ function generateChartConfiguration(chartInput:ChartInput):c3.ChartConfiguration
                 ,min:chartInput.y_range[0]
                 ,max:chartInput.y_range[1]
             }
+        }
+        ,point: {
+            show: false
+            ,r:10
         }
     }
 }
