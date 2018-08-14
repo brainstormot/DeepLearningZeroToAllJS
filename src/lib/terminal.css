@@ -10,8 +10,13 @@ ul#terminal li {
 }
 
 footer{
+	margin: auto;
 	height: 25%;
+	width: 98%;
 	border-style: solid;
-	border-width: 1px; 
+	border-width: 2px; 
 	overflow-y: scroll;
+	position:absolute;
+	bottom:0;
+	background-color: white;
 }
