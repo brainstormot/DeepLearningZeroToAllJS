@@ -4,4 +4,5 @@ module.exports = {
     ,'tf.js':'node_modules/@tensorflow/tfjs/dist/tf.min.js'
     ,'c3.js':'node_modules/c3/c3.min.js'
     ,'c3.css':'node_modules/c3/c3.min.css'
+    ,'lodash.js':'node_modules/lodash/lodash.min.js'
 }

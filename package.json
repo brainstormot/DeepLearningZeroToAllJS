@@ -29,12 +29,14 @@
     "@tensorflow/tfjs": "^0.12.4",
     "c3": "^0.6.7",
     "d3": "^5.5.0",
+    "lodash": "^4.17.10",
     "numjs": "^0.16.0",
     "tfjs": "^0.6.0"
   },
   "devDependencies": {
     "@types/c3": "^0.6.0",
     "@types/d3": "^5.0.0",
+    "@types/lodash": "^4.14.116",
     "@types/numjs": "^0.14.4",
     "browserify": "^16.2.2",
     "browserify-shim": "^3.8.14",
@@ -44,6 +46,7 @@
     "gulp-rename": "^1.4.0",
     "tsify": "^4.0.0",
     "typescript": "^2.9.2",
+    "vinyl-fs": "^3.0.3",
     "vinyl-source-stream": "^2.0.0"
   },
   "browserify": {
