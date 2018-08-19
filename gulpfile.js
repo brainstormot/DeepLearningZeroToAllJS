@@ -3,6 +3,7 @@ const clean = require('gulp-clean');
 const rename = require('gulp-rename');
 const browserify = require('browserify')
 const source = require('vinyl-source-stream')
+const vfs  = require('vinyl-fs')
 const connect = require('gulp-connect');
 
 const path = require('path')
@@ -15,6 +16,7 @@ const srcPath = path.join(baseDir,"src")
 const distPath = path.join(baseDir,"dist")
 const distLibPath = path.join(baseDir,"dist/lib")
 const srcLibPath = path.join(baseDir,"src/lib")
+const dataPath = path.join(baseDir,"data")
 
 
 
@@ -26,9 +28,20 @@ gulp.task('clean',function(){
 gulp.task('build',['clean'], build)
 gulp.task('build:html', build_html);
 gulp.task('build:lib',build_lib)
+gulp.task('build:data',build_data)
 gulp.task('build:ts', build_ts);
 
-gulp.task('run',['build'],function(){
+gulp.task('server',function(){
+    connect.server({
+        name:'DeepLearningZeroToAllJS'
+        ,root: 'dist',
+        livereload: true
+        ,port:8020
+        ,debug:true
+    });  
+})
+
+gulp.task('run', ['build'],function(){
     connect.server({
         name:'DeepLearningZeroToAllJS'
         ,root: 'dist',
@@ -38,8 +51,9 @@ gulp.task('run',['build'],function(){
     });
 })
 
+
 async function build(){
-    let results = await Promise.all([build_html(),build_lib(),build_ts()])
+    let results = await Promise.all([build_html(),build_lib(),build_data(),build_ts()])
     if(results.every(value=>value===true)){
         console.log("build success")
         return true
@@ -91,6 +105,23 @@ async function build_lib() {
         }
         return true
     }catch(e){
+        return false
+    }
+}
+
+async function build_data(){
+    try{
+        vfs.src(dataPath).pipe(
+            vfs.symlink(
+                distPath
+                ,{
+                    dirMode:"444"
+                }
+            )
+        )
+        return true;
+    }catch(e){
+        console.log("build_data : ",e)
         return false
     }
 }
