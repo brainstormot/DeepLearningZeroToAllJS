@@ -7,9 +7,7 @@ import {log} from '../../lib/terminal';
 
 log("backend : "+ tf.getBackend())
 
-
 const DATA_FILE = "../../data/data-03-diabetes.csv"
-
 const runButton:HTMLElement = document.getElementById('run')
 
 interface Inputs{
