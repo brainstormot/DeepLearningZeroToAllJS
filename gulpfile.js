@@ -66,6 +66,18 @@ async function build(){
 async function build_html() {
     try{
         // console.log("list:html")
+        let pInSrc = await pathsInSrc();
+        let htmlsInSrc = pInSrc.filter(_path => path.extname(_path[1]) === '.html').map(_path=>[_path[0], path.join(..._path)])
+        await Promise.all(htmlsInSrc.map(async function(html){
+            gulp.src(html[1]).pipe(rename('index.html')).pipe(gulp.dest(html[0].replace(srcPath,distPath)))
+        }))
+
+        let pInLab = await pathsInLab();
+        let htmlsInLab = pInLab.filter(_path => path.extname(_path[1]) === '.html').map(_path=>[_path[0], path.join(..._path)])
+        await Promise.all(htmlsInLab.map(async function(html){
+            gulp.src(html[1]).pipe(rename('index.html')).pipe(gulp.dest(html[0].replace(srcPath,distPath)))
+        }))
+
         let paths = await pathsInPage()
         let htmls = paths.filter(_path => path.extname(_path[1]) === '.html').map(_path=>[_path[0], path.join(..._path)])
         // console.log(htmls)
